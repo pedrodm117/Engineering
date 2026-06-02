@@ -1,4 +1,4 @@
-"lifting line theory, twist & lift distribution"
+"Lifting Line Theory, Twist & Lift Distribution"
 import numpy as np
 import matplotlib.pyplot as plt
 
