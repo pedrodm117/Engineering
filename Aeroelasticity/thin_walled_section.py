@@ -1,7 +1,4 @@
-"""ME 184 – Homework 5
-Problem 1: Single-cell airfoil – torsional constant J (open & closed), shear stress
-Problem 2: Three-cell airfoil – shear flow distribution
-"""
+"Cell airfoil & shear stress shear flow distribution"
 import numpy as np
 import matplotlib.pyplot as plt
 
