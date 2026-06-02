@@ -1,7 +1,4 @@
-"""ME 184 – Homework 2 Problem 4
-Part (a): Geometric twist distribution
-Part (b): Lifting-line – cl and cl_alpha spanwise distributions
-"""
+"lifting line theory, twist & lift distribution"
 import numpy as np
 import matplotlib.pyplot as plt
 
