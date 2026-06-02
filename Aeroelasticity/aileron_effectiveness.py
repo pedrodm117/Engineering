@@ -1,7 +1,4 @@
-"""ME 184 – Homework 4 Problem 1
-(a) Lateral force/moment balance for beta and delta_r
-(b) Lifting-line with aileron deflection – spanwise load, bending/torsion moments
-"""
+"Lateral Force/Moment Balance, Aileron Deflection for Bending/Torsuin Moments"
 import numpy as np
 import matplotlib.pyplot as plt
 
