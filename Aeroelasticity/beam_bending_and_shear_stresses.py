@@ -1,8 +1,4 @@
-"""ME 184 – Homework 7 Problem 1
-(a) Centroid and Iyy of three-cell airfoil
-(b) Bending stress distribution
-(c) Shear stress at web
-"""
+"Cell airfoil, Bending & Shear Stress Distribution"
 import numpy as np
 import matplotlib.pyplot as plt
 
