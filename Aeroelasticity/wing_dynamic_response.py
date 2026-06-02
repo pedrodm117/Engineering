@@ -1,7 +1,4 @@
-"""ME 184 – Homework 8 Problem 1
-Cantilever beam forced response via mode superposition.
-Distributed load f0*cos(pi*x/(2L)) + tip concentrated force Fz at omega0=10 rad/s.
-"""
+"Wing Forced Response via Mode Superposition"
 import numpy as np
 import matplotlib.pyplot as plt
 
