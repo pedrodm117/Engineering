@@ -1,8 +1,4 @@
-"""ME 184 – Homework 9
-Problem 2: Variable-EI beam static deflection (Galerkin)
-Problem 3: Beam + lumped mass natural frequencies
-Problem 4: Beam dynamic response with initial velocity (Crank-Nicolson)
-"""
+"Variable Stiffness Wing Static deflection (Galerkin), Wing & Lumped Mass Natural Frequencies"
 import numpy as np
 import matplotlib.pyplot as plt
 
