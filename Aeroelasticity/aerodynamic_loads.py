@@ -1,6 +1,4 @@
-"""ME 184 – Homework 3 Problem 1
-Swept tapered wing – lifting-line loads and distributed force/moment resultants.
-"""
+"Swept Tapered Wing for Lifting-line Loads and Distributed Force/Moment(s)" 
 import numpy as np
 import matplotlib.pyplot as plt
 
