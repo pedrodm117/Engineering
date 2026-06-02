@@ -1,6 +1,3 @@
-"""ME 184 - Homework 1 Python Solution
-Problem 2: Dynamic pressure and Mach number along a constant-slope flight path.
-"""
 import numpy as np
 import matplotlib.pyplot as plt
 import sys, os
