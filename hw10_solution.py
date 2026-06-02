@@ -1,0 +1,277 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import numpy.linalg as nla
+import mpmath
+
+# =============================================================================
+# PROBLEM 1: L-Frame FEM – First 3 Natural Frequencies and Mode Shapes
+# =============================================================================
+print("=" * 60)
+print("PROBLEM 1: L-Frame FEM")
+print("=" * 60)
+
+# ── Geometry & material ──────────────────────────────────────────────────────
+b_cs = 3 / 12        # cross-section width  (ft)
+t    = 0.5 / 12      # cross-section depth  (ft)
+A    = b_cs * t      # cross-sectional area (ft²)
+Iyy  = b_cs * t**3 / 12   # 2nd moment of area  (ft⁴)
+rho  = 5.4245        # density              (slug/ft³)
+E    = 1.5264e9      # Young's modulus      (lb/ft²)
+l    = 1.0           # element length       (ft)
+
+# ── Coordinate-transformation matrices ──────────────────────────────────────
+# Elements 1&2 lie along the x-axis: local x -> global x, local w -> global z
+# Elements 3&4 lie along the z-axis: local u -> global z, local w -> global x (mirrored)
+T1 = np.diag([1.0, 1.0, -1.0, 1.0, 1.0, -1.0])
+T2 = T1.copy()
+T3 = np.array([
+    [ 0, -1,  0,  0,  0,  0],
+    [ 1,  0,  0,  0,  0,  0],
+    [ 0,  0, -1,  0,  0,  0],
+    [ 0,  0,  0,  0, -1,  0],
+    [ 0,  0,  0,  1,  0,  0],
+    [ 0,  0,  0,  0,  0, -1],
+], dtype=float)
+T4 = T3.copy()
+Tvec = [T1, T2, T3, T4]
+
+# ── Element mass & stiffness matrices (local frame) ──────────────────────────
+r_axial = A * l**2 / Iyy    # axial-to-bending stiffness ratio
+
+m_elem = rho * A * l / 420 * np.array([
+    [ 140,     0,        0,    70,     0,        0],
+    [   0,   156,     22*l,     0,    54,    -13*l],
+    [   0,  22*l,  4*l**2,     0,  13*l, -3*l**2],
+    [  70,     0,        0,   140,     0,        0],
+    [   0,    54,     13*l,     0,   156,    -22*l],
+    [   0, -13*l, -3*l**2,     0, -22*l,   4*l**2],
+])
+
+k_elem = E * Iyy / l**3 * np.array([
+    [ r_axial,   0,        0, -r_axial,   0,        0],
+    [       0,  12,      6*l,        0, -12,      6*l],
+    [       0, 6*l,  4*l**2,        0,-6*l,  2*l**2],
+    [-r_axial,   0,        0,  r_axial,   0,        0],
+    [       0, -12,     -6*l,        0,  12,     -6*l],
+    [       0, 6*l,  2*l**2,        0,-6*l,  4*l**2],
+])
+
+# ── Assemble global matrices ─────────────────────────────────────────────────
+nele = 4
+ndof = (nele + 1) * 3
+K = np.zeros((ndof, ndof))
+M = np.zeros((ndof, ndof))
+
+for i in range(nele):
+    Ti  = Tvec[i]
+    Kg  = Ti.T @ k_elem @ Ti
+    Mg  = Ti.T @ m_elem @ Ti
+    idx = slice(3 * i, 3 * i + 6)
+    K[idx, idx] += Kg
+    M[idx, idx] += Mg
+
+# ── Apply BCs: fix all 3 DOFs at node 1 ─────────────────────────────────────
+Kr = K[3:, 3:]
+Mr = M[3:, 3:]
+
+# ── Solve generalised eigenvalue problem ─────────────────────────────────────
+# Solve generalised eigenvalue problem: Kr*v = lambda*Mr*v
+# via Cholesky:  Mr = L L^T, then (L^-1 Kr L^-T) y = lambda y
+L      = np.linalg.cholesky(Mr)
+Linv   = np.linalg.inv(L)
+A_sym  = Linv @ Kr @ Linv.T
+eigvals, W = nla.eigh(A_sym)   # eigh for symmetric
+V      = Linv.T @ W
+eigvals    = eigvals.real
+# eigh already returns sorted eigenvalues
+omega_nat  = np.sqrt(eigvals[:3])
+print(f"First 3 natural frequencies: {omega_nat[0]:.4f}, {omega_nat[1]:.4f}, {omega_nat[2]:.4f}  rad/s")
+
+# Pad with zeros at node 1 (boundary condition)
+n  = V.shape[1]
+Vc = np.vstack([np.zeros((3, n)), V])   # shape (15, n)
+
+# ── Reconstruct and plot mode shapes ─────────────────────────────────────────
+xi_local = np.linspace(0, l, 500)
+scale    = 10   # divide eigenvector displacement to make plot readable
+
+fig1, ax1 = plt.subplots(figsize=(7, 6))
+colors = ['tab:blue', 'tab:red', 'tab:green']
+labels = ['Mode 1', 'Mode 2', 'Mode 3']
+
+for mode in range(3):
+    ux_plot, uz_plot = [], []
+    for j in range(nele):
+        xi   = xi_local
+        s    = xi / l
+        # Hermite shape function matrix  N (2×6) at each point
+        N_row1 = np.column_stack([1-s,
+                                   np.zeros_like(s),
+                                   np.zeros_like(s),
+                                   s,
+                                   np.zeros_like(s),
+                                   np.zeros_like(s)])
+        N_row2 = np.column_stack([np.zeros_like(s),
+                                   1 - 3*s**2 + 2*s**3,
+                                   l * (s - 2*s**2 + s**3),
+                                   np.zeros_like(s),
+                                   3*s**2 - 2*s**3,
+                                   l * (-s**2 + s**3)])
+        # N_row1, N_row2: each (len(xi), 6)
+        # global DOFs for element j
+        U_ele = Vc[3*j : 3*j+6, mode]
+        TU    = Tvec[j] @ U_ele   # (6,) local displacements
+
+        u_disp = (N_row1 @ TU) / scale   # axial local
+        w_disp = (N_row2 @ TU) / scale   # bending local
+
+        if j < 2:
+            # Horizontal elements (along x): x increases, z is deflection
+            ux_plot.append(xi + j * l + u_disp)
+            uz_plot.append(w_disp)
+        else:
+            # Vertical elements (along negative z): z decreases, x is deflection
+            ux_plot.append(2 * l + w_disp)
+            uz_plot.append(-(xi + (j - 2) * l) - u_disp)
+
+    ax1.plot(np.concatenate(ux_plot), np.concatenate(uz_plot),
+             color=colors[mode], label=labels[mode])
+
+ax1.set_aspect('equal')
+ax1.grid(True)
+ax1.set_xlabel('x  (ft)')
+ax1.set_ylabel('z  (ft)')
+ax1.set_title('Problem 1 – L-Frame Mode Shapes')
+ax1.legend(loc='lower left')
+plt.tight_layout()
+plt.savefig('problem1_mode_shapes.png', dpi=150)
+print("Saved problem1_mode_shapes.png")
+
+# =============================================================================
+# PROBLEM 2: Theodorsen Function F(k) and G(k)
+# =============================================================================
+print("\n" + "=" * 60)
+print("PROBLEM 2: Theodorsen Function")
+print("=" * 60)
+
+def theodorsen(k_arr):
+    """Return C(k), F(k)=Re(C), G(k)=Im(C) for an array of reduced frequencies.
+    Uses mpmath Hankel functions of the second kind:
+    H_n^(2)(k) = J_n(k) - i*Y_n(k)
+    """
+    k_arr = np.atleast_1d(k_arr).astype(float)
+    C = np.zeros(len(k_arr), dtype=complex)
+    for i, kv in enumerate(k_arr):
+        if kv <= 0:
+            C[i] = 1.0 + 0j
+        else:
+            H1 = complex(mpmath.hankel2(1, kv))
+            H0 = complex(mpmath.hankel2(0, kv))
+            C[i] = H1 / (H1 + 1j * H0)
+    F = C.real
+    G = C.imag
+    return C, F, G
+
+k_arr        = np.linspace(0, 4, 200)   # fewer points (mpmath is slower than scipy)
+C_arr, F_arr, G_arr = theodorsen(k_arr)
+
+fig2, (ax2a, ax2b) = plt.subplots(2, 1, figsize=(7, 6), sharex=True)
+
+ax2a.plot(k_arr, F_arr, 'b', linewidth=1.5)
+ax2a.set_ylabel('F(k)')
+ax2a.set_ylim([0.5, 1.0])
+ax2a.grid(True, linestyle='--', alpha=0.5)
+ax2a.set_title('Problem 2 – Theodorsen Function')
+
+ax2b.plot(k_arr, G_arr, 'b', linewidth=1.5)
+ax2b.set_xlabel('k')
+ax2b.set_ylabel('G(k)')
+ax2b.set_ylim([-0.2, 0.0])
+ax2b.grid(True, linestyle='--', alpha=0.5)
+
+plt.tight_layout()
+plt.savefig('problem2_theodorsen.png', dpi=150)
+print("Saved problem2_theodorsen.png")
+
+# =============================================================================
+# PROBLEM 3b: Unsteady vs Quasi-Steady Lift Coefficient
+# =============================================================================
+print("\n" + "=" * 60)
+print("PROBLEM 3: Unsteady Lift")
+print("=" * 60)
+
+# ── Parameters ───────────────────────────────────────────────────────────────
+c      = 10.0    # chord          (ft)
+x_e    = 4.0     # elastic center from LE  (ft)
+V_inf  = 500.0   # airspeed       (ft/s)
+omega  = 10.0    # pitch frequency (rad/s)
+theta0 = np.deg2rad(1.0)   # amplitude (rad)
+Mach   = 0.5
+
+b      = c / 2             # semi-chord  (ft)
+k      = omega * b / V_inf # reduced frequency
+cla    = 2 * np.pi / np.sqrt(1 - Mach**2)   # compressible lift-curve slope (1/rad)
+
+# ── Offset parameters (Theodorsen convention) ────────────────────────────────
+# a : non-dim position of elastic axis from midchord (positive toward TE), /b
+a   = (x_e - b) / b        # = (4 - 5)/5 = -0.2
+# ec : distance from elastic axis to 3/4-chord = b*(1/2 - a)
+ec  = b * (0.5 - a)        # = 5 * 0.7 = 3.5 ft  →  ec/c = 0.35
+# em : distance elastic axis is forward of midchord = -b*a
+em  = -b * a               # = 1.0 ft             →  em/c = 0.10
+
+print(f"k  = {k:.4f}")
+print(f"ec/c = {ec/c:.4f},  em/c = {em/c:.4f},  a = {a:.4f}")
+print(f"cla  = {cla:.4f}  1/rad")
+
+# ── Theodorsen function at the operating k ───────────────────────────────────
+_, Fk, Gk = theodorsen(np.array([k]))
+Fk, Gk = float(Fk[0]), float(Gk[0])
+print(f"F(k) = {Fk:.4f},  G(k) = {Gk:.4f}")
+
+# ── Analytical A and B coefficients ─────────────────────────────────────────
+# c_tilde_l = A*sin(omega*t) + B*cos(omega*t)
+#
+# Circulatory:
+#   cla * C(k) * [theta + ec/V_inf * theta_dot]
+# Non-circulatory (apparent mass, incompressible):
+#   pi*b/V_inf * theta_dot  +  pi*b^2*a/V_inf^2 * (-theta_ddot)
+#   → contributes pi*k to cos-term and pi*a*k^2 to sin-term
+A_coeff = (cla * Fk
+           - cla * Gk  * (2 * k * ec / c)
+           + np.pi * a * k**2)               # sin(omega*t) coefficient / theta0
+B_coeff = (cla * Fk * (2 * k * ec / c)
+           + cla * Gk
+           + np.pi * k)                       # cos(omega*t) coefficient / theta0
+
+print(f"\nUnsteady: A = {A_coeff:.4f}*theta0,  B = {B_coeff:.4f}*theta0")
+
+# ── Time arrays ──────────────────────────────────────────────────────────────
+t_arr   = np.linspace(0, 1.0, 2000)
+tau_arr = 2 * V_inf * t_arr / c   # non-dimensional time  τ = 2V∞t/c
+
+# ── Lift coefficients ────────────────────────────────────────────────────────
+theta_t  = theta0 * np.sin(omega * t_arr)   # pitch angle (rad)
+
+# Unsteady (Theodorsen)
+cl_tilde = (A_coeff * np.sin(omega * t_arr)
+          + B_coeff * np.cos(omega * t_arr)) * theta0
+
+# Quasi-steady
+cl_bar   = cla * theta_t
+
+# ── Plot ─────────────────────────────────────────────────────────────────────
+fig3, ax3 = plt.subplots(figsize=(8, 5))
+ax3.plot(tau_arr, cl_tilde, 'b',     linewidth=1.5, label=r'$\tilde{c}_l$ (unsteady)')
+ax3.plot(tau_arr, cl_bar,   'g',     linewidth=1.5, label=r'$\bar{c}_l$ (quasi-steady)')
+ax3.set_xlabel(r'$\tau = 2V_\infty t/c$')
+ax3.set_ylabel(r'$c_l$')
+ax3.set_title('Problem 3 – Unsteady vs Quasi-Steady Lift  ($\\theta_0=1°$)')
+ax3.legend()
+ax3.grid(True, linestyle='--', alpha=0.5)
+plt.tight_layout()
+plt.savefig('problem3_lift.png', dpi=150)
+print("Saved problem3_lift.png")
+
+plt.show()
+print("\nDone. All three plots saved.")
