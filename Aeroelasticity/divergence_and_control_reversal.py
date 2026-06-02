@@ -1,11 +1,4 @@
-"""
-ME 184 - Homework 11 Python Solution
-Problems 1, 2, and 3
-
-Run:  python hw11_solution.py
-Requires: numpy, matplotlib, mpmath (scipy NOT required)
-"""
-
+"Divergence & Control Reversal"
 import numpy as np
 import numpy.linalg as nla
 import matplotlib.pyplot as plt
