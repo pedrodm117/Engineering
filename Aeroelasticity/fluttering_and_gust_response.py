@@ -1,10 +1,4 @@
-"""ME 184 – Homework 12
-P1: 2-DOF flutter (plunge+pitch), strip theory C=1, V-g diagram
-P2: 1-DOF torsional flutter with Theodorsen C(k)
-P3: 3D wing flutter – Galerkin (2 bending + 2 torsion modes), unswept, C=1
-P4: Swept wing flutter with Theodorsen C(k) iteration
-P5: Same at altitude 35000 ft + gust response
-"""
+"Aerodynamic Fluttering & Gust Response"
 import numpy as np
 import numpy.linalg as nla
 import matplotlib.pyplot as plt
