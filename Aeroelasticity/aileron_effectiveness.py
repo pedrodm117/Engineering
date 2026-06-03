@@ -1,4 +1,4 @@
-"Lateral Force/Moment Balance, Aileron Deflection for Bending/Torsuin Moments"
+# Lateral Force/Moment Balance, Aileron Deflection for Bending/Torsuin Moments
 import numpy as np
 import matplotlib.pyplot as plt
 
