@@ -11,7 +11,7 @@ zp=5*tc*c*(0.2969*np.sqrt(x/c)-0.126*x/c-0.3516*(x/c)**2+0.2843*(x/c)**3-0.1015*
 xu=x-zp*np.sin(theta); zu=z+zp*np.cos(theta)
 xl=x+zp*np.sin(theta); zl=z-zp*np.cos(theta)
 
-# ── Problem 1 ─────────────────────────────────────────────────────────────────
+# 1
 n=len(x)
 dU=np.sqrt((xu[1:]-xu[:-1])**2+(zu[1:]-zu[:-1])**2)+np.sqrt((xl[1:]-xl[:-1])**2+(zl[1:]-zl[:-1])**2)
 U=np.sum(dU)
@@ -29,7 +29,7 @@ J_closed=4*A_sec**2*t_wall/U
 tau_closed=(T/(2*A_sec*t_wall))/144
 print("P1: Closed cell J = %.4e ft^4,  tau = %.2f psi" % (J_closed, tau_closed))
 
-# ── Problem 2 ─────────────────────────────────────────────────────────────────
+# 2
 # Cell boundaries at indices 37, 77 (0-based)
 # Using same cross-section geometry
 ts=0.12/12; tw=0.48/12; G=4.06e6*144
