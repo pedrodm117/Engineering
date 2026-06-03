@@ -1,4 +1,4 @@
-"Cell airfoil, Bending & Shear Stress Distribution"
+# Cell airfoil, Bending & Shear Stress Distribution
 import numpy as np
 import matplotlib.pyplot as plt
 
