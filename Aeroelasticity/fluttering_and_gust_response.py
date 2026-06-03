@@ -4,7 +4,7 @@ import numpy.linalg as nla
 import matplotlib.pyplot as plt
 import mpmath
 
-# ── Atmosphere ────────────────────────────────────────────────────────────────
+#Atmosphere
 def atmosphere(h_ft):
     psl=2116.2; Tsl=518.69; a1=-3.56616e-3/Tsl; a2=0.54864e-3/Tsl
     h1=36089.0; h2=65617.0; g=32.174; R=1716.56; b1=-g/(R*Tsl*a1); b2=-g/(R*Tsl*a2)
@@ -45,9 +45,8 @@ def cantilever_modes(nmode,L,x):
 
 def interp1(xp,fp,xi): return np.interp(xi,xp,fp)
 
-# =============================================================================
 print("="*60); print("PROBLEM 1 – 2-DOF flutter (plunge + pitch), C=1")
-# =============================================================================
+# **************************
 _,_,rhoinf,ainf=atmosphere(0)
 c1=10; ma=rhoinf*np.pi*c1**2/4; m1=10*ma; I1=m1*c1**2/12
 ecg=0.1*c1; e1=0.15*c1; gh=0.01; gth=0.01
@@ -93,9 +92,9 @@ if VF_list:
 axes[1].set_xlabel('V (ft/s)'); axes[1].set_ylabel('g'); axes[1].set_title('P1 V-g'); axes[1].legend(['Plunge','Pitch','Flutter']); axes[1].grid(True,linestyle='--',alpha=0.5)
 plt.tight_layout(); plt.savefig('hw12_p1.png',dpi=150); print("Saved hw12_p1.png")
 
-# =============================================================================
+# -------------------------------
 print("\n"+"="*60); print("PROBLEM 2 – 1-DOF torsional flutter with Theodorsen")
-# =============================================================================
+# &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 nu=0.001; c2=1; e2_p=-0.25*c2; em2=(0.25-0)*(c2); ec2=(0.5-0)*c2
 AR2=8; Vinf2=np.arange(0.1,300.1,0.1)
 _,_,rho2,ainf2=atmosphere(0)
@@ -127,9 +126,9 @@ axes2[0].plot(Vinf2,omega2); axes2[0].set_xlabel('V (ft/s)'); axes2[0].set_ylabe
 axes2[1].plot(Vinf2,g2); axes2[1].axhline(0,color='k',linewidth=0.5); axes2[1].set_xlabel('V (ft/s)'); axes2[1].set_ylabel('g'); axes2[1].set_title('P2 V-g (torsion)'); axes2[1].grid(True,linestyle='--',alpha=0.5)
 plt.tight_layout(); plt.savefig('hw12_p2.png',dpi=150); print("Saved hw12_p2.png")
 
-# =============================================================================
+# ****************************************************
 print("\n"+"="*60); print("PROBLEM 3 – 3D wing flutter (unswept, C=1)")
-# =============================================================================
+# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 def flutter_3d(EIyy,GJ,rhoA,rhoIxx,c3,e3,em3,ec3,ecg3,Lambda_deg,L3,AR3,
                altitude,nmode3,Vinf_range,use_theodorsen=False,zeta=0.005):
     _,_,rhoinf3,ainf3=atmosphere(altitude)
@@ -231,9 +230,9 @@ axes3[0].set_xlabel('V (ft/s)'); axes3[0].set_ylabel('omega'); axes3[0].set_titl
 axes3[1].axhline(0,color='k',linewidth=0.5); axes3[1].set_xlabel('V (ft/s)'); axes3[1].set_ylabel('g'); axes3[1].set_title('P3 V-g'); axes3[1].grid(True,linestyle='--',alpha=0.5)
 plt.tight_layout(); plt.savefig('hw12_p3.png',dpi=150); print("Saved hw12_p3.png")
 
-# =============================================================================
+# ----------------------------------------------------
 print("\n"+"="*60); print("PROBLEM 4 – Swept wing flutter with Theodorsen")
-# =============================================================================
+# &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 EIyy4p=2e9; GJ4p=1e9; rhoA4p=5; rhoIxx4p=1500
 c4=14; e4=0.15*c4; em4=0.25*c4-e4; ec4=0.5*c4-e4; ecg4=0; Lambda4=30
 b4=140; L4p=b4/(2*np.cos(np.radians(Lambda4))); AR4=b4/c4
@@ -248,9 +247,9 @@ axes4[0].set_xlabel('V (ft/s)'); axes4[0].set_ylabel('omega'); axes4[0].set_titl
 axes4[1].axhline(0,color='k',linewidth=0.5); axes4[1].set_xlabel('V (ft/s)'); axes4[1].set_ylabel('g'); axes4[1].set_title('P4 V-g (swept)'); axes4[1].grid(True,linestyle='--',alpha=0.5)
 plt.tight_layout(); plt.savefig('hw12_p4.png',dpi=150); print("Saved hw12_p4.png")
 
-# =============================================================================
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 print("\n"+"="*60); print("PROBLEM 5 – Gust response at altitude 35000 ft")
-# =============================================================================
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 _,_,rhoinf5,ainf5=atmosphere(35000)
 Vinf5=580; Lambda5=0; L5=b4/(2*np.cos(np.radians(Lambda5))); AR5=b4/c4
 ma5=rhoinf5*np.pi*c4**2/4
