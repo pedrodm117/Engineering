@@ -1,4 +1,4 @@
-"Aerodynamic Fluttering & Gust Response"
+# Aerodynamic Fluttering & Gust Response
 import numpy as np
 import numpy.linalg as nla
 import matplotlib.pyplot as plt
