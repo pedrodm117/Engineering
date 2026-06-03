@@ -11,18 +11,17 @@ def atmosphere(h_ft):
     p=psl*delta; T=Tsl*theta; rho=p/(1716.0*T); a_s=np.sqrt(1.4*1716.0*T)
     return p,T,rho,a_s
 
-# ── Parameters ────────────────────────────────────────────────────────────────
 W=20000; h_alt=40000; Md=0.5
 p,_,_,_=atmosphere(h_alt)
 gamma=1.4; q=gamma/2*p*Md**2
 c=10; b=80; S=c*b; alpha0=-2*np.pi/180; alphad=1*np.pi/180
 clalphad=2*np.pi/np.sqrt(1-Md**2); AR=b**2/S; CLd=W/(q*S)
 
-# ── Part (a) twist ────────────────────────────────────────────────────────────
+# Twist 
 y=np.linspace(-b/2,b/2,101)
 xi=alpha0-alphad+CLd/(np.pi*AR)+4*CLd/(np.pi*AR*c*clalphad)*np.sqrt(b**2-4*y**2)
 
-# ── Part (b) Lifting-line ────────────────────────────────────────────────────
+# Lifting-line 
 alpha=2*np.pi/180; Minf=0.4
 clalphas=2*np.pi/np.sqrt(1-Minf**2); N=9
 phi=np.linspace(0.01,np.pi-0.01,101)
