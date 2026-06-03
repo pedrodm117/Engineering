@@ -1,4 +1,4 @@
-"Variable Stiffness Wing Static deflection (Galerkin), Wing & Lumped Mass Natural Frequencies"
+#Variable Stiffness Wing Static deflection (Galerkin), Wing & Lumped Mass Natural Frequencies
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -19,7 +19,7 @@ def cantilever_modes(nmode, L, x):
         Phi2p[:,n]=mu_v[n]**2/L**2*(np.cosh(xi)+np.cos(xi)-gam_v[n]*(np.sinh(xi)+np.sin(xi)))
     return Phi,Phi2p,np.array(mu_v)
 
-# ── Problem 2 ─────────────────────────────────────────────────────────────────
+# 2
 L2=20; x2=np.linspace(0,L2,1001)
 EIyy2=2.5459e6*(1-0.8*x2**2/L2**2); fz2=250*(np.cos(np.pi*x2/L2)+1)
 nmode2=5; Phi2,Phi2p2,mu2=cantilever_modes(nmode2,L2,x2)
@@ -30,7 +30,7 @@ for i in range(nmode2):
 q2=np.linalg.solve(K2,Q2); w2=Phi2@q2
 print("P2: Max deflection = %.5f ft at x = %.2f ft" % (np.max(np.abs(w2)), x2[np.argmax(np.abs(w2))]))
 
-# ── Problem 3 ─────────────────────────────────────────────────────────────────
+# 3
 L3=62; x3=np.linspace(0,L3,1001); EIyy3=2.5234e8; rhoA3=5.2960; m_lump=357.43; xc=21.5
 nmode3=2; Phi3,Phi2p3,mu3=cantilever_modes(nmode3,L3,x3)
 # Interpolate Phi at xc
@@ -49,7 +49,7 @@ for i in range(nmode3):
 eig3b=np.linalg.eigvals(np.linalg.solve(M3b,K3)); omega3b=np.sort(np.sqrt(np.abs(eig3b)))
 print("P3: Natural frequencies (no lumped mass)   = %s rad/s" % str(np.round(omega3b,4)))
 
-# ── Problem 4 ─────────────────────────────────────────────────────────────────
+# 4
 L4=66
 Iyy_pts=np.array([1.88329,0.99233,0.43889,0.14262,0.02314])
 A_pts=np.array([1.56047,1.26038,0.96029,0.66020,0.36011])
