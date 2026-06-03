@@ -1,4 +1,4 @@
-"Swept Tapered Wing for Lifting-line Loads and Distributed Force/Moment(s)" 
+# Swept Tapered Wing for Lifting-line Loads and Distributed Force/Moment(s)
 import numpy as np
 import matplotlib.pyplot as plt
 
