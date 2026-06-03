@@ -1,9 +1,8 @@
-"Divergence & Control Reversal"
+# Divergence & Control Reversal
 import numpy as np
 import numpy.linalg as nla
 import matplotlib.pyplot as plt
 def _brentq(f, a, b, **kw):
-    """Simple bisection root finder (replaces scipy.optimize.brentq)."""
     fa, fb = f(a), f(b)
     for _ in range(100):
         m = (a + b) / 2
@@ -16,9 +15,6 @@ def _brentq(f, a, b, **kw):
             a, fa = m, fm
     return (a + b) / 2
 
-# =============================================================================
-# Standard Atmosphere (1976 US Std Atm) – translated from atmosphere.m
-# =============================================================================
 def atmosphere(h_ft):
     psl = 2116.2; Tsl = 518.69
     a1 = -3.56616e-3 / Tsl
@@ -60,14 +56,12 @@ def solve_divergence_mach(lmin, AR, pinf, gamma=1.4):
     qD = gamma / 2 * pinf * MD**2
     return MD, qD
 
-# =============================================================================
-# PROBLEM 1 – Tapered unswept wing, energy / Galerkin method
-# =============================================================================
+# 1 
+# Tapered unswept wing, energy / Galerkin method
 print("=" * 60)
 print("PROBLEM 1")
 print("=" * 60)
 
-# ── Geometry & properties ──────────────────────────────────────────────────
 b_span = 100.0          # wingspan (ft)
 L      = b_span / 2     # semi-span (ft)
 cr, ct = 20.0, 10.0
@@ -83,7 +77,7 @@ e  = 0.15 * c                  # elastic axis offset (ft)
 Psi   = np.column_stack([x**2 - 2*x,          x**3 - 3*x])
 Psi1p = np.column_stack([(2*x - 2)/L,         (3*x**2 - 3)/L])
 
-# ── (a) Divergence ─────────────────────────────────────────────────────────
+# Divergence
 pinf, *_ = atmosphere(h_alt)[0], None, None, None
 pinf = atmosphere(h_alt)[0]
 gamma = 1.4
@@ -100,7 +94,7 @@ print(f"\nGeneralised stiffness K (×10^6):\n{K/1e6}")
 print(f"\nKa/(q_inf*cla) (×10^3):\n{dKa_dqcla/1e3}")
 
 # Eigenvalue problem: K*q = lambda * Ka/(q*cla) * q
-# → K - lambda * (Ka/q_inf/cla) = 0  → lambda = q_D * cla
+# K - lambda * (Ka/q_inf/cla) = 0  → lambda = q_D * cla
 eigvals = nla.eigvals(nla.solve(dKa_dqcla, K))   # equivalent to eig(K, dKa)
 print(f"\nEigenvalues λ = q_D*c_la: {eigvals}")
 lmin = np.min(np.abs(eigvals))
@@ -113,7 +107,7 @@ MD, qD = solve_divergence_mach(lmin, AR, pinf, gamma)
 print(f"Divergence Mach number MD = {MD:.4f}  (solution: 0.7045)")
 print(f"Divergence dynamic pressure qD = {qD:.4f} psf  (solution: 337.84 psf)")
 
-# ── (b) Torsional rotation and shear stress at M=0.65 ─────────────────────
+# Torsional rotation and shear stress at M=0.65
 Minf = 0.65
 qinf = gamma / 2 * pinf * Minf**2
 clalpha = 2*np.pi / (np.sqrt(1 - Minf**2) + 2/AR)
@@ -163,9 +157,7 @@ plt.tight_layout()
 plt.savefig('problem1_torsion_stress.png', dpi=150)
 print("Saved problem1_torsion_stress.png")
 
-# =============================================================================
-# PROBLEM 2 – Swept wing, Galerkin method (bending + torsion coupled)
-# =============================================================================
+# 2 Swept wing, Galerkin method (bending + torsion coupled)
 print("\n" + "=" * 60)
 print("PROBLEM 2")
 print("=" * 60)
@@ -197,7 +189,7 @@ K2[1, 1] = np.trapz(Psi1p2 * GJ2 * Psi1p2, x2*L2)
 print(f"\nK (structural):\n{K2}")
 
 def swept_Ka_over_qcla(Lambda_deg):
-    """Aerodynamic stiffness matrix Ka / (q*cla) for sweep angle Lambda (deg)."""
+    # Aerodynamic stiffness matrix Ka / (q*cla) for sweep angle Lambda (deg)
     cL = np.cos(np.deg2rad(Lambda_deg))
     sL = np.sin(np.deg2rad(Lambda_deg))
     tL = np.tan(np.deg2rad(Lambda_deg))
@@ -208,9 +200,7 @@ def swept_Ka_over_qcla(Lambda_deg):
     Ka[1, 1] = c2*cL**2 * np.trapz(-Psi2*e2*cL*Psi2,              x2*L2)
     return Ka
 
-# NOTE: MATLAB solution carries b=100 from Problem 1 (variable workspace leak).
-# Using b=100 (Problem 1 wingspan) to reproduce expected divergence Mach numbers.
-AR2 = 100 / c2   # = 5  (matches MATLAB solution behaviour)
+AR2 = 100 / c2   # = 5  
 pinf2 = atmosphere(h_alt)[0]
 
 for case_name, Lambda_deg in [("(a) Forward sweep Λ=−30°", -30),
@@ -239,9 +229,9 @@ for case_name, Lambda_deg in [("(a) Forward sweep Λ=−30°", -30),
         MD2, qD2 = solve_divergence_mach(lmin2, AR2, pinf2, gamma)
         print(f"  MD = {MD2:.4f},  qD = {qD2:.4f} psf")
 
-# =============================================================================
-# PROBLEM 3 – Control reversal, iterative solution
-# =============================================================================
+# 3 
+# Control reversal, iterative solution
+
 print("\n" + "=" * 60)
 print("PROBLEM 3")
 print("=" * 60)
@@ -261,9 +251,6 @@ T4  = -np.arccos(cs) + cs*np.sqrt(1 - cs**2)
 T10 =  np.arccos(cs) + np.sqrt(1 - cs**2)
 print(f"cs={cs:.4f},  T4={T4:.4f},  T10={T10:.4f}")
 
-# NOTE: MATLAB solution code uses the literal number 10, not the variable T10.
-# i.e.  cmacdelta = -(T4 + 10) / 2   <-- this matches expected converged answer.
-# The physically correct formula would use T10=1.9132, but we replicate the solution.
 cmac_delta = -(T4 + 10) / 2
 pinf3 = atmosphere(h_alt)[0]
 
