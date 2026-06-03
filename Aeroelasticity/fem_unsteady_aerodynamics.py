@@ -1,4 +1,4 @@
-"FEM Method for Solving Unsteady Aerodynamics"
+#FEM Method for Solving Unsteady Aerodynamics
 import numpy as np
 import matplotlib.pyplot as plt
 import numpy.linalg as nla
@@ -150,10 +150,10 @@ print("PROBLEM 2: Theodorsen Function")
 print("=" * 60)
 
 def theodorsen(k_arr):
-    """Return C(k), F(k)=Re(C), G(k)=Im(C) for an array of reduced frequencies.
-    Uses mpmath Hankel functions of the second kind:
-    H_n^(2)(k) = J_n(k) - i*Y_n(k)
-    """
+    # Return C(k), F(k)=Re(C), G(k)=Im(C) for an array of reduced frequencies.
+    # Uses mpmath Hankel functions of the second kind:
+    # H_n^(2)(k) = J_n(k) - i*Y_n(k)
+    
     k_arr = np.atleast_1d(k_arr).astype(float)
     C = np.zeros(len(k_arr), dtype=complex)
     for i, kv in enumerate(k_arr):
