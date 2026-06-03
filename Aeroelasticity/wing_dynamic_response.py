@@ -1,4 +1,4 @@
-"Wing Forced Response via Mode Superposition"
+# Wing Forced Response via Mode Superposition
 import numpy as np
 import matplotlib.pyplot as plt
 
